@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defesa da Base</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Barra de recursos melhorada -->
+        <div class="resource-bar" id="resource-bar">
+            <div class="resource-item">
+                <div class="resource-icon">🪵</div>
+                <div class="resource-info">
+                    <span class="resource-label">Madeira</span>
+                    <div class="resource-value-container">
+                        <span id="wood-count" class="resource-count">200</span>
+                        <span id="wood-rate" class="resource-rate">+3/s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="resource-item">
+                <div class="resource-icon">🪨</div>
+                <div class="resource-info">
+                    <span class="resource-label">Pedra</span>
+                    <div class="resource-value-container">
+                        <span id="stone-count" class="resource-count">100</span>
+                        <span id="stone-rate" class="resource-rate">+2/s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="resource-item">
+                <div class="resource-icon">🪙</div>
+                <div class="resource-info">
+                    <span class="resource-label">Ouro</span>
+                    <div class="resource-value-container">
+                        <span id="gold-count" class="resource-count">75</span>
+                        <span id="gold-rate" class="resource-rate">+1/s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="resource-item">
+                <div class="resource-icon">👥</div>
+                <div class="resource-info">
+                    <span class="resource-label">População</span>
+                    <div class="resource-value-container">
+                        <span class="population-display">
+                            <span id="population-count">0</span>/<span id="max-population-count">15</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-game-area">
+            <!-- Área principal do jogo -->
+            <div class="game-canvas-container" id="canvas-container">
+                <canvas id="gameCanvas" width="1000" height="700"></canvas>
+                
+                <!-- Overlay para menu de construção -->
+                <div id="buildMenu" class="build-menu hidden">
+                    <h3>🔨 Construir Estrutura</h3>
+                    <div class="build-buttons" id="build-menu">
+                        <button class="build-btn" data-structure="house">
+                            <div class="build-btn-icon">🏠</div>
+                            <div class="build-btn-info">
+                                <span>Casa</span>
+                                <small>🪵 40</small>
+                            </div>
+                        </button>
+                        <button class="build-btn" data-structure="woodCollector">
+                            <div class="build-btn-icon">🪓</div>
+                            <div class="build-btn-info">
+                                <span>Coletor Madeira</span>
+                                <small>🪵 25</small>
+                            </div>
+                        </button>
+                        <button class="build-btn" data-structure="stoneQuarry">
+                            <div class="build-btn-icon">⛏️</div>
+                            <div class="build-btn-info">
+                                <span>Pedreira</span>
+                                <small>🪵 80 🪨 40</small>
+                            </div>
+                        </button>
+                        <button class="build-btn" data-structure="goldMine">
+                            <div class="build-btn-icon">⚒️</div>
+                            <div class="build-btn-info">
+                                <span>Mina Ouro</span>
+                                <small>🪵 120 🪨 80</small>
+                            </div>
+                        </button>
+                        <button class="build-btn" data-structure="archerTower">
+                            <div class="build-btn-icon">🏹</div>
+                            <div class="build-btn-info">
+                                <span>Torre Arqueiro</span>
+                                <small>🪵 60 🪨 20</small>
+                            </div>
+                        </button>
+                        <button class="build-btn" data-structure="mageTower">
+                            <div class="build-btn-icon">🔮</div>
+                            <div class="build-btn-info">
+                                <span>Torre Mago</span>
+                                <small>🪨 80 🪙 40</small>
+                            </div>
+                        </button>
+                        <button class="build-btn" data-structure="wall">
+                            <div class="build-btn-icon">🧱</div>
+                            <div class="build-btn-info">
+                                <span>Muro</span>
+                                <small>🪵 20 🪨 8</small>
+                            </div>
+                        </button>
+                        <button class="build-btn" data-structure="defensePortal">
+                            <div class="build-btn-icon">🌀</div>
+                            <div class="build-btn-info">
+                                <span>Portal Defesa</span>
+                                <small>🪵 150 🪨 100 🪙 75</small>
+                            </div>
+                        </button>
+                    </div>
+                    <button class="btn btn--secondary" id="cancelBuildBtn">❌ Cancelar</button>
+                </div>
+
+                <!-- Menu de upgrade melhorado -->
+                <div id="upgradeMenu" class="upgrade-menu hidden">
+                    <h3 id="upgradeTitle">🔧 Melhorar Estrutura</h3>
+                    <div class="upgrade-info">
+                        <p id="upgradeInfo">Nível atual: 1</p>
+                        <div id="upgradeStats" class="upgrade-stats"></div>
+                    </div>
+                    <button id="upgradeBtn" class="btn btn--primary">
+                        ⬆️ Melhorar - 🪵 50
+                    </button>
+                    <button class="btn btn--secondary" id="cancelUpgradeBtn">❌ Cancelar</button>
+                </div>
+
+                <!-- Wave Timer Visual -->
+                <div id="waveTimer" class="wave-timer-overlay">
+                    <div class="wave-timer-content">
+                        <div class="wave-timer-circle">
+                            <span id="timer-seconds">45</span>
+                        </div>
+                        <div class="wave-timer-text">Próxima Onda</div>
+                    </div>
+                </div>
+
+                <!-- Achievement Notifications -->
+                <div id="achievementNotification" class="achievement-notification hidden">
+                    <div class="achievement-content">
+                        <div class="achievement-icon">🏆</div>
+                        <div class="achievement-text">
+                            <div class="achievement-title">Conquista Desbloqueada!</div>
+                            <div class="achievement-description">Primeira Base</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel lateral melhorado -->
+            <div class="side-panel">
+                <div class="wave-info">
+                    <h3>⚔️ Onda <span id="current-wave">1</span></h3>
+                    <div class="wave-progress">
+                        <div class="wave-bar">
+                            <div id="wave-progress-fill" class="wave-progress-fill"></div>
+                        </div>
+                        <div class="wave-stats">
+                            <div>Inimigos: <span id="enemies-remaining">0</span></div>
+                            <div>Vidas: <span id="lives-remaining">5</span>/5</div>
+                        </div>
+                    </div>
+                    <div class="wave-difficulty">
+                        <span id="wave-difficulty">Fácil</span>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button id="pauseBtn" class="btn btn--primary">⏸️ Pausar</button>
+                    <button id="speedBtn" class="btn btn--outline">⚡ 1x</button>
+                    <button id="soundBtn" class="btn btn--outline">🔊 Som</button>
+                    <button id="tutorialBtn" class="btn btn--secondary">❓ Tutorial</button>
+                </div>
+
+                <!-- Special Abilities Panel -->
+                <div class="special-abilities">
+                    <h4>💫 Habilidades Especiais</h4>
+                    <div class="ability-buttons">
+                        <button id="airStrikeBtn" class="ability-btn" data-ability="airStrike" title="Ataque Aéreo - Causa dano em área">
+                            <div class="ability-icon">✈️</div>
+                            <div class="ability-name">Ataque Aéreo</div>
+                            <div class="ability-cooldown" id="airStrike-cooldown">60s</div>
+                        </button>
+                        <button id="repairBtn" class="ability-btn" data-ability="repair" title="Reparar Todas - Restaura HP de estruturas">
+                            <div class="ability-icon">🔧</div>
+                            <div class="ability-name">Reparar</div>
+                            <div class="ability-cooldown" id="repair-cooldown">45s</div>
+                        </button>
+                        <button id="freezeBtn" class="ability-btn" data-ability="freeze" title="Congelar - Paralisa inimigos">
+                            <div class="ability-icon">❄️</div>
+                            <div class="ability-name">Congelar</div>
+                            <div class="ability-cooldown" id="freeze-cooldown">30s</div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="game-stats">
+                    <h4>📊 Estatísticas</h4>
+                    <div class="stat-item">
+                        <span>👹 Eliminados:</span>
+                        <span id="enemies-killed">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>🏗️ Estruturas:</span>
+                        <span id="structures-built">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>🔧 Upgrades:</span>
+                        <span id="upgrades-made">0</span>
+                    </div>
+                </div>
+
+                <div class="achievements">
+                    <h4>🏆 Conquistas</h4>
+                    <div id="achievements-list" class="achievements-list">
+                        <!-- Achievements will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Research System -->
+                <div class="research-panel">
+                    <h4>🔬 Pesquisas</h4>
+                    <div class="research-buttons">
+                        <button id="research-damage" class="research-btn" data-research="damage">
+                            <div class="research-icon">⚔️</div>
+                            <div class="research-info">
+                                <div class="research-name">Dano +</div>
+                                <div class="research-cost">100🪙</div>
+                            </div>
+                        </button>
+                        <button id="research-range" class="research-btn" data-research="range">
+                            <div class="research-icon">🎯</div>
+                            <div class="research-info">
+                                <div class="research-name">Alcance +</div>
+                                <div class="research-cost">120🪙</div>
+                            </div>
+                        </button>
+                        <button id="research-economy" class="research-btn" data-research="economy">
+                            <div class="research-icon">💰</div>
+                            <div class="research-info">
+                                <div class="research-name">Economia +</div>
+                                <div class="research-cost">80🪙</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de menu inicial -->
+    <div id="mainMenu" class="modal">
+        <div class="modal-content">
+            <h1>🏰 Defesa da Base</h1>
+            <p>Colete recursos, construa defesas e sobreviva às ondas de inimigos!</p>
+            <div class="menu-buttons">
+                <button class="btn btn--primary btn--lg" id="startTutorialBtn">🎓 Iniciar com Tutorial</button>
+                <button class="btn btn--outline btn--lg" id="skipTutorialBtn">⚡ Pular Tutorial</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sistema de Tutorial -->
+    <div id="tutorialOverlay" class="tutorial-overlay hidden">
+        <div class="tutorial-content">
+            <div class="tutorial-character">🤖</div>
+            <div class="tutorial-text">
+                <h3 id="tutorialTitle">Título do Tutorial</h3>
+                <p id="tutorialText">Texto explicativo do tutorial...</p>
+            </div>
+            <div class="tutorial-controls">
+                <div class="tutorial-progress">
+                    <span id="tutorialStep">1</span> / <span id="tutorialTotal">7</span>
+                </div>
+                <div class="tutorial-buttons">
+                    <button id="tutorialSkip" class="btn btn--secondary">⏭️ Pular</button>
+                    <button id="tutorialNext" class="btn btn--primary">➡️ Próximo</button>
+                </div>
+            </div>
+        </div>
+        <div class="tutorial-highlight" id="tutorialHighlight"></div>
+        <div class="tutorial-arrow" id="tutorialArrow"></div>
+    </div>
+
+    <!-- Menu de Pausa -->
+    <div id="pauseMenu" class="modal hidden">
+        <div class="modal-content">
+            <h2>⏸️ Jogo Pausado</h2>
+            <div class="pause-menu-buttons">
+                <button class="btn btn--primary btn--lg" id="resumeBtn">▶️ Continuar</button>
+                <button class="btn btn--outline btn--lg" id="pauseTutorialBtn">🎓 Ver Tutorial</button>
+                <button class="btn btn--secondary btn--lg" id="restartBtn">🔄 Reiniciar</button>
+            </div>
+            <div class="pause-stats">
+                <h3>📈 Estatísticas da Sessão</h3>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span>Onda Atual:</span>
+                        <span id="pause-wave">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Tempo Jogado:</span>
+                        <span id="pause-time">0:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Recursos Coletados:</span>
+                        <span id="pause-resources">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Defesas Construídas:</span>
+                        <span id="pause-defenses">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de game over -->
+    <div id="gameOverMenu" class="modal hidden">
+        <div class="modal-content">
+            <h1>💀 Fim de Jogo</h1>
+            <div class="final-stats">
+                <h3>📊 Estatísticas Finais</h3>
+                <div class="stat-grid">
+                    <div class="stat-item">
+                        <span>🌊 Onda alcançada:</span>
+                        <span id="final-wave">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>👹 Inimigos eliminados:</span>
+                        <span id="final-enemies-killed">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>🏗️ Estruturas construídas:</span>
+                        <span id="final-structures-built">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>🔧 Upgrades realizados:</span>
+                        <span id="final-upgrades">0</span>
+                    </div>
+                </div>
+                <div class="final-message" id="final-message">
+                    Você defendeu bem sua base!
+                </div>
+            </div>
+            <button class="btn btn--primary btn--lg" id="gameOverRestartBtn">🔄 Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
